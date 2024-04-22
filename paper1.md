@@ -20,6 +20,8 @@ Design Pattern, Strategy pattern, Mission plan
 # 2. 본론
 
 # 3. 결론
+[1] Gamma, Erich and Helm, Richard and Johnson, Ralph and Vlissides, John
+, "Design patterns: elements of reusable object-oriented software", pp. 315-324, 1995,
 
 # 사사
 
