@@ -20,9 +20,21 @@ Design Pattern, Strategy pattern, Mission plan
 # 2. 본론
 
 # 3. 결론
-[1] Gamma, Erich and Helm, Richard and Johnson, Ralph and Vlissides, John
-, "Design patterns: elements of reusable object-oriented software", pp. 315-324, 1995,
+Gamma, Erich and Helm, Richard and Johnson, Ralph and Vlissides, John, "Design patterns: elements of reusable object-oriented software", pp. 315-324, 1995,
 
+C.Alexander, S. Ishikawa, M. Silverstein, M. Jacobson and I.Fiksdahl-King, S. Angel, “A Pattern Language”, Oxford University Press, NewYork, 1997.
+
+Kim Unyong, Choe Yeonggeun, “Special Issue: Software Quality : Pattern-Oriented Software Development Process using Incremental Composition for Design Patterns”, Korea Information Processing Society, Vol.10, No.5, pp.763-772, 2003,
+
+Shin Woochang, “Study on Formal Software Design Patterns”, Institute of Industrial Technology Seokyeong University, Vol.17, No.0, pp.71-83, 2006
+
+Son Hyunseung, Kim Wooyeol, Ahn Hongyoung and Kum Youngchul, “Applying Design Pattern ＆ Refactoring on Implementing RTOS for the Small Educational Multi-Joint Robot”, The Journal of The Institute of Internet, Broadcasting and Communication(JIIBC), Vol.9, No.3, pp.217-224, 2009
+
+Kim Moonkwon, “Methods to Apply GoF Design Patterns in Service-Oriented Computing”, Korea Information Processing Society Transactions. Part D, Vol.19, No.2, pp.187-202, 2012.
+
+Sungho Hong, Sangmyeon Shin, "Enhancing SW Modification Efficiency and Performance by utilizing GOF Design Patterns for Operational Flight Program", Korean Institute of Information Scientists and Engineers, pp 84-86, Dec, 2016
+
+Woo-Cheol Jung, Mun-Seok Jeon and Do-Hyeon Choi, "A Study on the Application Method of GOF Design Pattern for Optimizing Android Device", The journal of the institute of internet, broadcasting and communication : JIIBC, v.17 no.1, pp.89 - 97, 2017
 # 사사
 
 # Reference
