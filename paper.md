@@ -1,4 +1,4 @@
-# 실내 탐색 임무 수행을 위한 응집도 기반 이종 군집 유전 알고리즘 편제 및  임무 할당 기법 (가제목)
+# 실내 탐색 임무 수행을 위한 응집도 기반 이종 군집 유전 알고리즘 편제 및 임무 할당 기법 (가제목)
 응집도를 고려한 유전 알고리즘 기반 이종 군집 편제 및 정찰 임무 할당 방법
 이종 군집의 응집도 기반 편제 및 정찰 임무 할당을 위한 유전 알고리즘 기법
 
@@ -16,12 +16,14 @@
 시뮬레이션을 통해 군집 편제를 고려한 제안한 알고리즘과 군집 편제를 고려하지 않는 할당 알고리즘을 비교하여 효율적인 탐색 임무 수행을 보여준다. 
 
 ### Keyword
-Multi Agent(다중 에이전트), Task Allocation(과업 할당), Genetic Algorithm(유전 알고리즘), Coalition Formation(그룹 편제)
+Multi-Robot System(다중 로봇 시스템), Task Allocation(과업 할당), Genetic Algorithm(유전 알고리즘), Coalition Formation(그룹 편제)
 
-# 1. 서론
-
+# 서론
+Multi-robot system(MRS)은 Single-robot system(SRS)의 자원 한계로 인해 
 
 # 본론
+
+# 시뮬레이션 결과
 
 # 결론
 
