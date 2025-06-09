@@ -71,6 +71,6 @@ keywords: {Oceans;Sea measurements;Unmanned underwater vehicles;Control systems;
 [14] N. Qi, Z. Huang, F. Zhou, Q. Shi, Q. Wu and M. Xiao, "A Task-Driven Sequential Overlapping Coalition Formation Game for Resource Allocation in Heterogeneous UAV Networks," in IEEE Transactions on Mobile Computing, vol. 22, no. 8, pp. 4439-4455, 1 Aug. 2023, doi: 10.1109/TMC.2022.3165965.
 keywords: {Task analysis;Games;Schedules;Resource management;Autonomous aerial vehicles;Costs;Reconnaissance;Unmanned aerial vehicle;overlapping coalition formation game;task and resource allocation;sequential task execution schedule},
 <br>
-[15] D. Suh, S. Shim and J. Kim, "A Study on the Application of Performance Normalization-Based Mission Plan for Heterogeneous Unmanned Vehicle" KIMST  pp. 895-896, 2024
+[15] D. Suh, S. Shim and J. Kim, "A Study on the Application of Performance Normalization-Based Mission Plan for Heterogeneous Unmanned Vehicle" KIMST Autumn Conference Proceedings pp. 895-896, Nov, 2024
 <br>
 [16] C. Shin, B.-M. Jeong, D. Suh, S. Shim, J. Kim, and H.-L. Choi, “Frontier Exploration and Task Allocation-based Cooperative Mapping Algorithm for Multi-robot System,” Journal of the Korea Institute of Military Science and Technology, vol. 28, no. 2. The Korea Institute of Military Science and Technology, pp. 217–223, 05-Apr-2025.
