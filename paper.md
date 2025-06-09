@@ -26,12 +26,17 @@ Multi-Robot System(다중 로봇 시스템), Mission Task Allocation(임무 할�
  제안한 응집도 기반 유전 알고리즘 이종 그룹 편제 및 임무 할당 기법은 성능 검증을 위해 가제보 시뮬레이션을 통해 성능 수행하며 그 결과를 분석한다.
 
 # 2. 본론 : 시스템 모델과 문제 정의(가제목)
+이종 그룹 편제 및 임무 할당을 하기 위해서는 임무가 요구하는 로봇의 성능을 알아야하며 각 이종 로봇들의 성능들을 알아야한다.[12] 본 장에서는 각 이종 로봇들의 성능 파라미터들을 정의하고, 이를 바탕으로 정찰 임무에 적합한 성능 요구사항들을 도출하며 궁극적으로 그룹 편제 및 임무 할당에 필요한 산출값들을 제시한다. 
 
-## 2.1 임무 성능 요구사항과 로봇 성능 파라미터
+## 2.1 이종 로봇 성능 파라미터와 임무 성능 요구사항
+그룹 편제 및 임무 할당하기 앞서 각 이종 로봇들은 서로 상이한 성능 특성을 가지므로, 그룹 편성과 임무 할당의 기준으로 활용하기 위해 성능 요소들을 정량화할 필요가 있다. 정량화 방법은 정규화 기반[15]으로 
 
-## 2.2 응집도 기반 유전 알고리즘 이종 그룹 편제 및 임무 할당 기법
+## 2.2 임무 범위에 따른 개수 선정
+임무 성능 요구사항은 1개의 로봇을 
 
-# 3. 시뮬레이션 결과
+## 2.3 응집도 기반 유전 알고리즘 이종 그룹 편제 및 임무 할당 기법
+
+# 3. 시뮬레이션 결과 및 분석
 
 # 4. 결론
 
@@ -66,4 +71,6 @@ keywords: {Oceans;Sea measurements;Unmanned underwater vehicles;Control systems;
 [14] N. Qi, Z. Huang, F. Zhou, Q. Shi, Q. Wu and M. Xiao, "A Task-Driven Sequential Overlapping Coalition Formation Game for Resource Allocation in Heterogeneous UAV Networks," in IEEE Transactions on Mobile Computing, vol. 22, no. 8, pp. 4439-4455, 1 Aug. 2023, doi: 10.1109/TMC.2022.3165965.
 keywords: {Task analysis;Games;Schedules;Resource management;Autonomous aerial vehicles;Costs;Reconnaissance;Unmanned aerial vehicle;overlapping coalition formation game;task and resource allocation;sequential task execution schedule},
 <br>
-[15] C. Shin, B.-M. Jeong, D. Suh, S. Shim, J. Kim, and H.-L. Choi, “Frontier Exploration and Task Allocation-based Cooperative Mapping Algorithm for Multi-robot System,” Journal of the Korea Institute of Military Science and Technology, vol. 28, no. 2. The Korea Institute of Military Science and Technology, pp. 217–223, 05-Apr-2025.
+[15] D. Suh, S. Shim and J. Kim, "A Study on the Application of Performance Normalization-Based Mission Plan for Heterogeneous Unmanned Vehicle" KIMST  pp. 895-896, 2024
+<br>
+[16] C. Shin, B.-M. Jeong, D. Suh, S. Shim, J. Kim, and H.-L. Choi, “Frontier Exploration and Task Allocation-based Cooperative Mapping Algorithm for Multi-robot System,” Journal of the Korea Institute of Military Science and Technology, vol. 28, no. 2. The Korea Institute of Military Science and Technology, pp. 217–223, 05-Apr-2025.
