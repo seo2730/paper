@@ -1,0 +1,1 @@
+#!/home/seo2730/duck_paper/bin/python
