@@ -2,6 +2,7 @@ FROM ros:foxy
 
 # 1. 필수 패키지 업데이트 및 Python3 pip 설치
 RUN apt-get update && apt-get install -y \
+    git \
     python3-pip \
     python3-colcon-common-extensions \
     python3-rosdep \
