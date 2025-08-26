@@ -121,7 +121,7 @@ class PoseAndMapLogger(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    logger = PoseAndMapLogger(save_dir_name='map2/existing_algorithm/map1_existing_ex4')
+    logger = PoseAndMapLogger(save_dir_name='map2/existing_algorithm/map1_existing_ex15')
     try:
         rclpy.spin(logger)
     except KeyboardInterrupt:
