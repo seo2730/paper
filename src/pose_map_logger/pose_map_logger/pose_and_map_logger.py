@@ -13,21 +13,18 @@ class PoseAndMapLogger(Node):
         super().__init__('pose_and_map_logger')
         
         self.pose_topics = [
-            '/my111/posestamped',
-            '/my112/posestamped',
-            '/my119/posestamped',
-            '/my120/posestamped',
-            '/my221/posestamped',
+            '/my010/posestamped',
             '/my228/posestamped',
-            '/my001/posestamped',
-            '/my005/posestamped',
-            '/my006/posestamped',
-            '/my117/posestamped',
             '/my229/posestamped',
             '/my230/posestamped',
+            '/my005/posestamped',
+            '/my113/posestamped',
+            '/my114/posestamped',
+            '/my115/posestamped',
+            '/my225/posestamped',
         ]
-        self.map_topic1 = '/my111/group_map_0_1'
-        self.map_topic2 = '/my001/group_map_0_1'
+        self.map_topic1 = '/my010/group_map_0_1'
+        self.map_topic2 = '/my005/group_map_0_1'
 
         self.files = {}
         os.makedirs(save_dir_name, exist_ok=True)
@@ -121,7 +118,7 @@ class PoseAndMapLogger(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    logger = PoseAndMapLogger(save_dir_name='map2/existing_algorithm/map1_existing_ex15')
+    logger = PoseAndMapLogger(save_dir_name='map2/proposed_algorithm/map2_existing_ex15')
     try:
         rclpy.spin(logger)
     except KeyboardInterrupt:
