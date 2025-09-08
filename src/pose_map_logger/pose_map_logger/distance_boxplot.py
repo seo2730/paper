@@ -4,12 +4,17 @@ import pandas as pd
 import argparse
 import matplotlib.pyplot as plt
 import numpy as np
+import re
+import sys
+
+def extract_robot_number(name):
+    match = re.search(r'\d+', name)
+    return int(match.group()) if match else float('inf')
 
 def plot_robot_distance_boxplot(folder_path, save_filename='robot_distance_boxplot.png'):
-    labels = []
-    data = []
+    robot_data = {}
 
-    print("\n📊 로봇별 총 이동 거리 분석:")
+    print("\n📊 Analyzing total travel distances per robot:")
 
     for fname in os.listdir(folder_path):
         if fname.endswith('_distance.csv'):
@@ -20,33 +25,46 @@ def plot_robot_distance_boxplot(folder_path, save_filename='robot_distance_boxpl
             mean_d = np.mean(distances)
             std_d = np.std(distances)
 
-            print(f"- {robot_name}: 평균={mean_d:.2f}m, 표준편차={std_d:.2f}m, 실험 수={len(distances)}")
+            print(f"- {robot_name}: mean = {mean_d:.2f} m, std = {std_d:.2f} m, experiments = {len(distances)}")
 
-            labels.append(robot_name)
-            data.append(distances)
+            robot_data[robot_name] = distances
+
+    if not robot_data:
+        print("❌ No '_distance.csv' files found in the specified folder.")
+        return
+
+    sorted_robot_names = sorted(robot_data.keys(), key=extract_robot_number)
+    sorted_data = [robot_data[name] for name in sorted_robot_names]
 
     plt.figure(figsize=(10, 6))
-    plt.boxplot(data, labels=labels, patch_artist=True, boxprops=dict(facecolor='lightgreen'))
+    plt.boxplot(sorted_data, labels=sorted_robot_names, patch_artist=True,
+                boxprops=dict(facecolor='lightgreen'))
 
-    for i, dists in enumerate(data):
-        x = [i+1]*len(dists)
-        plt.scatter(x, dists, color='red', zorder=3)
+    # for i, dists in enumerate(sorted_data):
+    #     x = [i+1]*len(dists)
+    #     plt.scatter(x, dists, color='red', zorder=3)
 
-    plt.title('로봇별 실험 총 이동 거리 Boxplot')
-    plt.ylabel('이동 거리 (m)')
+    plt.title('Total Travel Distance per Robot (Boxplot)')
+    plt.ylabel('Travel Distance (m)')
+    plt.ylim(5, 65)  # Y축 고정 범위 설정
     plt.grid(True)
     plt.tight_layout()
     plt.savefig(save_filename)
-    print(f'✅ Boxplot 저장됨: {save_filename}')
-    plt.show()
+    print(f'✅ Boxplot saved: {save_filename}')
+    # plt.show()
 
 def main():
-    parser = argparse.ArgumentParser(description='로봇 거리 Boxplot 시각화')
-    parser.add_argument('--folder', type=str, required=True, help='거리 CSV들이 들어 있는 폴더 경로')
-    parser.add_argument('--output', type=str, default='robot_distance_boxplot.png', help='저장할 PNG 파일 이름')
-    args = parser.parse_args()
+    try:
+        parser = argparse.ArgumentParser(description='Visualize robot travel distances as boxplot')
+        parser.add_argument('--folder', type=str, required=True, help='Path to folder with distance CSVs')
+        parser.add_argument('--output', type=str, default='robot_distance_boxplot.png', help='Filename to save the PNG image')
+        args = parser.parse_args()
 
-    plot_robot_distance_boxplot(args.folder, save_filename=args.output)
+        plot_robot_distance_boxplot(args.folder, save_filename=args.output)
+
+    except KeyboardInterrupt:
+        print("\n🛑 Program interrupted by user. Exiting gracefully.")
+        sys.exit(0)
 
 if __name__ == '__main__':
     main()
