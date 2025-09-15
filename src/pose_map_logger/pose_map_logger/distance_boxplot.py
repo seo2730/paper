@@ -38,7 +38,7 @@ def plot_robot_distance_boxplot(folder_path, save_filename='robot_distance_boxpl
 
     plt.figure(figsize=(10, 6))
     plt.boxplot(sorted_data, labels=sorted_robot_names, patch_artist=True,
-                boxprops=dict(facecolor='lightgreen'))
+                boxprops=dict(facecolor='skyblue'))
 
     # for i, dists in enumerate(sorted_data):
     #     x = [i+1]*len(dists)
