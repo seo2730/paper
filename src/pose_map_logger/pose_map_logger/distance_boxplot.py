@@ -48,7 +48,7 @@ def plot_robot_distance_boxplot(folder_path, save_filename='robot_distance_boxpl
     plt.xticks(fontsize=20)
     plt.yticks(fontsize=20)
     plt.ylabel('Travel Distance(m)', fontsize=20)
-    plt.ylim(19, 62)  # Y축 고정 범위 설정 19,62 9,26 
+    plt.ylim(14,49)  # Y축 고정 범위 설정 19,62 9,26 14,49
     plt.grid(True)
     plt.tight_layout()
     plt.savefig(save_filename)
