@@ -88,8 +88,8 @@ def plot_robot_trajectories_with_map(folder_path, map_csv_path, save_filename='r
     # plt.title('Robot Trajectories over Map')
     plt.xticks(fontsize=20)
     plt.yticks(fontsize=20)
-    plt.xlim(-1.5, 26) # -1.5, 35 -1.5, 26
-    plt.ylim(7, 31.5) # -1.5, 35  7, 31.5
+    plt.xlim(-1.5, 31.5) # -1.5, 35 -1.5, 26
+    plt.ylim(-1.5, 35) # -1.5, 35  7, 31.5
     plt.xlabel('X (meters)', fontsize=20)
     plt.ylabel('Y (meters)', fontsize=20)
     plt.legend(loc='upper right', fontsize=15, framealpha=0.9)
