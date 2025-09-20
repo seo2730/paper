@@ -51,7 +51,7 @@ def plot_robot_trajectories_with_map(folder_path, map_csv_path, save_filename='r
     # 로봇 파일 수집
     robot_files = sorted([
         fname for fname in os.listdir(folder_path)
-        if fname.endswith('.csv') and 'posestamped' in fname
+        if fname.endswith('.csv') and 'robot' in fname
     ])
 
     # 로봇 수만큼 고유 색상 지정
@@ -89,10 +89,10 @@ def plot_robot_trajectories_with_map(folder_path, map_csv_path, save_filename='r
     plt.xticks(fontsize=20)
     plt.yticks(fontsize=20)
     plt.xlim(-1.5, 31.5) # -1.5, 35 -1.5, 26
-    plt.ylim(-1.5, 35) # -1.5, 35  7, 31.5
+    plt.ylim(-1.5, 31.5) # -1.5, 35  7, 31.5
     plt.xlabel('X (meters)', fontsize=20)
     plt.ylabel('Y (meters)', fontsize=20)
-    plt.legend(loc='upper right', fontsize=15, framealpha=0.9)
+    plt.legend(loc='upper right', fontsize=18, framealpha=0.9)
     plt.grid(True, alpha=0.2)
     plt.tight_layout()
     plt.savefig(save_filename, dpi=200)
