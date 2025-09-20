@@ -9,7 +9,7 @@ from matplotlib.colors import ListedColormap, BoundaryNorm
 # ----------------------------
 # 표시용 팔레트 (0=Free, 1=Occupied, 2=Unknown)
 # ----------------------------
-CLASS_CMAP = ListedColormap(["#FFFFFF", "#000000", "#7F7F7F"])
+CLASS_CMAP = ListedColormap(["#FFFFFF", "#000000", "#7F7F7F"])  # 흰=free, 검=occ, 회=unknown
 CLASS_NORM = BoundaryNorm([-0.5, 0.5, 1.5, 2.5], CLASS_CMAP.N)
 
 # ----------------------------
@@ -52,12 +52,12 @@ def load_map_csv(map_csv_path):
     return grid, meta
 
 # ----------------------------
-# 표시용 3-클래스 변환 (스케일 차이와 상관없이 색 고정)
+# 표시용 3-클래스 변환 (색 고정)
 # ----------------------------
 def grid_to_display_classes(grid):
     """
     0=Free(흰색), 1=Occupied(검정), 2=Unknown(회색)
-    -1은 Unknown 고정. 나머지는 임계 50 기준으로 Free/Occupied 분류.
+    -1은 Unknown 고정. 임계 50 기준으로 Free/Occupied 분류.
     """
     disp = np.full(grid.shape, 2, dtype=np.int8)  # Unknown=2
     known = (grid != -1)
@@ -70,21 +70,14 @@ def grid_to_display_classes(grid):
     return disp
 
 # ----------------------------
-# Map merging (덮어쓰기 방지: 위치 클리핑 + 합집합 규칙)
+# Map merging (unknown 대체 + 합집합 규칙)
 # ----------------------------
 def merge_maps(grid1, meta1, grid2, meta2):
-    """
-    해상도 동일 필요. 서로 다른 origin/크기 지원.
-    병합 규칙:
-      - 하나라도 Occupied(>=50)이면 100
-      - 그 외, 알려진 값이 하나라도 있으면 0(Free)
-      - 둘 다 Unknown이면 -1
-    + 붙여넣기 위치를 반드시 캔버스 내부로 '클리핑'하여 음수 인덱싱 래핑 방지
-    """
     res1, res2 = meta1['resolution'], meta2['resolution']
     assert abs(res1 - res2) < 1e-12, "두 지도 resolution이 달라 병합할 수 없습니다."
     res = res1
 
+    # 두 지도 범위
     h1, w1 = grid1.shape
     h2, w2 = grid2.shape
     x1_min, x1_max = meta1['origin_x'], meta1['origin_x'] + w1 * res
@@ -92,62 +85,60 @@ def merge_maps(grid1, meta1, grid2, meta2):
     x2_min, x2_max = meta2['origin_x'], meta2['origin_x'] + w2 * res
     y2_min, y2_max = meta2['origin_y'], meta2['origin_y'] + h2 * res
 
+    # 전체 범위
     x_min, x_max = min(x1_min, x2_min), max(x1_max, x2_max)
     y_min, y_max = min(y1_min, y2_min), max(y1_max, y2_max)
-
     W = int(np.ceil((x_max - x_min) / res))
     H = int(np.ceil((y_max - y_min) / res))
 
-    merged = -1 * np.ones((H, W), dtype=int)  # Unknown으로 초기화
+    merged = -1 * np.ones((H, W), dtype=int)
 
-    def paste_union(src_grid, src_meta):
+    def place(src_grid, src_meta):
         ox, oy = src_meta['origin_x'], src_meta['origin_y']
         x0 = int(np.floor((ox - x_min) / res))
         y0 = int(np.floor((oy - y_min) / res))
         h, w = src_grid.shape
+        return (y0, y0+h, x0, x0+w), src_grid
 
-        # ---- 클리핑 (음수/범위초과 방지) ----
-        # 대상(캔버스) 좌표
-        dx0 = max(0, x0)
-        dy0 = max(0, y0)
-        dx1 = min(W, x0 + w)
-        dy1 = min(H, y0 + h)
+    (y10,y1h,x10,x1w), g1 = place(grid1, meta1)
+    (y20,y2h,x20,x2w), g2 = place(grid2, meta2)
 
-        # 아무 교집합이 없으면 skip
-        if dx0 >= dx1 or dy0 >= dy1:
-            return
+    # 지도1 전체 복사
+    merged[y10:y1h, x10:x1w] = g1
 
-        # 소스(원본) 좌표
-        sx0 = dx0 - x0
-        sy0 = dy0 - y0
-        sx1 = sx0 + (dx1 - dx0)
-        sy1 = sy0 + (dy1 - dy0)
+    # 지도2 붙이기 (unknown 처리 포함)
+    # 교차 영역
+    dx0, dx1 = max(x10,x20), min(x1w,x2w)
+    dy0, dy1 = max(y10,y20), min(y1h,y2h)
+    if dx0 < dx1 and dy0 < dy1:
+        a = merged[dy0:dy1, dx0:dx1]
+        b = g2[(dy0-y20):(dy1-y20), (dx0-x20):(dx1-x20)]
+        out = a.copy()
 
-        dst = merged[dy0:dy1, dx0:dx1]
-        src = src_grid[sy0:sy1, sx0:sx1]
+        both_known = (a != -1) & (b != -1)
+        only_a     = (a != -1) & (b == -1)
+        only_b     = (a == -1) & (b != -1)
 
-        a = dst
-        b = src
+        # 한쪽만 known → 그 값
+        out[only_a] = a[only_a]
+        out[only_b] = b[only_b]
 
-        a_unknown = (a == -1)
-        b_unknown = (b == -1)
+        # 둘 다 known → 규칙 적용
+        if np.any(both_known):
+            occ = (a[both_known] >= 50) | (b[both_known] >= 50)
+            out[both_known] = np.where(occ, 100, 0)
 
-        a_occ = (~a_unknown) & (a >= 50)
-        b_occ = (~b_unknown) & (b >= 50)
+        merged[dy0:dy1, dx0:dx1] = out
 
-        occ = a_occ | b_occ
-        known = (~a_unknown) | (~b_unknown)
-        free = known & (~occ)
-
-        out = -1 * np.ones_like(a)
-        out[occ] = 100   # occupied
-        out[free] = 0    # free
-
-        dst[:, :] = out  # 규칙 결과만 기록 (덮어쓰기 아님)
-
-    # 순서는 중요하지 않지만 두 번 모두 '합집합 규칙' + '클리핑'으로 안전
-    paste_union(grid1, meta1)
-    paste_union(grid2, meta2)
+    # 교차 외 영역에서 지도2 값이 있고 merged가 unknown이면 채워줌
+    yslice = slice(max(0,y20), min(H,y2h))
+    xslice = slice(max(0,x20), min(W,x2w))
+    sub = merged[yslice, xslice]
+    g2_crop = g2[(yslice.start-y20):(yslice.stop-y20),
+                 (xslice.start-x20):(xslice.stop-x20)]
+    mask = (sub == -1) & (g2_crop != -1)
+    sub[mask] = g2_crop[mask]
+    merged[yslice, xslice] = sub
 
     merged_meta = {'resolution': res, 'origin_x': x_min, 'origin_y': y_min}
     return merged, merged_meta
@@ -172,52 +163,40 @@ def plot_robot_trajectories_with_map(folder_path,
     H, W = grid.shape
     res = meta['resolution']
     ox, oy = meta['origin_x'], meta['origin_y']
-
     extent = [ox, ox + W * res, oy, oy + H * res]
 
-    # 3-클래스 고정 팔레트로 시각화(지도들 간 톤 일관성 확보)
+    # 3-클래스 팔레트로 표시
     disp = grid_to_display_classes(grid)
     plt.imshow(disp, cmap=CLASS_CMAP, norm=CLASS_NORM,
                origin='lower', extent=extent)
 
-    # 로봇 파일 수집(안정적 색/범례 순서를 위해 정렬)
+    # 로봇 궤적
     robot_files = sorted([
         fname for fname in os.listdir(folder_path)
         if fname.endswith('.csv') and 'posestamped' in fname
     ])
-
-    # 로봇 수만큼 고유 색상
     cmap = plt.get_cmap('tab20', max(len(robot_files), 1))
 
     for idx, fname in enumerate(robot_files):
         robot_name = fname.replace('.csv', '')
         data = load_pose_data(os.path.join(folder_path, fname))
-
-        x_world = data[:, 0]  # m
-        y_world = data[:, 1]  # m
-
+        x_world, y_world = data[:, 0], data[:, 1]
         color = cmap(idx)
-        # 궤적
+
         plt.plot(x_world, y_world, label=robot_name, color=color, linewidth=2, alpha=0.95)
+        # 시작점 원
+        plt.scatter(x_world[0], y_world[0], s=80, c=[color], marker='o',
+                    edgecolors='black', linewidths=1.2, zorder=5, label=None)
 
-        # 시작 위치 원 강조 (s=80 고정)
-        plt.scatter(x_world[0], y_world[0],
-                    s=80, c=[color], marker='o',
-                    edgecolors='black', linewidths=1.2,
-                    zorder=5, label=None)
-
-        # 마지막 위치에 총 이동거리 표시
         dist = compute_total_distance(data)
-        plt.text(x_world[-1], y_world[-1],
-                 f'{dist:.2f}m', fontsize=9, color=color,
-                 ha='left', va='bottom')
-
+        plt.text(x_world[-1], y_world[-1], f'{dist:.2f}m',
+                 fontsize=9, color=color, ha='left', va='bottom')
         print(f'{robot_name} 총 이동 거리: {dist:.2f} m')
 
     plt.title('Robot Trajectories over Map (merged)' if map_csv_path2 else 'Robot Trajectories over Map')
     plt.xlabel('X (meters)')
     plt.ylabel('Y (meters)')
-    plt.legend(loc='upper right', fontsize=20, markerscale=1.3, framealpha=0.9)  # 범례 20 고정
+    plt.legend(loc='upper right', fontsize=20, markerscale=1.3, framealpha=0.9)
     plt.grid(True, alpha=0.25)
     plt.tight_layout()
     plt.savefig(save_filename, dpi=200)
@@ -228,7 +207,7 @@ def plot_robot_trajectories_with_map(folder_path,
 # Main
 # ----------------------------
 def main():
-    parser = argparse.ArgumentParser(description='궤적 + 맵 시각화 (단일/병합 지도, 안전 클리핑)')
+    parser = argparse.ArgumentParser(description='궤적 + 맵 시각화 (단일/병합 지도)')
     parser.add_argument('--folder', type=str, required=True, help='Pose CSV들이 있는 폴더 경로')
     parser.add_argument('--map', type=str, required=True, help='사용할 map CSV 파일 경로(필수)')
     parser.add_argument('--map2', type=str, default=None, help='병합할 두 번째 map CSV 파일 경로(선택)')
