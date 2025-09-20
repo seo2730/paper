@@ -25,6 +25,17 @@ def compute_total_distance(positions):
     return float(np.sum(dists))
 
 def load_map_csv(map_csv_path):
+    """
+    CSV 예시:
+      resolution,0.05
+      origin_x,-10.0
+      origin_y,-10.0
+      width,400
+      height,400
+      grid
+      0,0,100,...
+      ...
+    """
     with open(map_csv_path, 'r') as f:
         lines = f.readlines()
 
@@ -36,7 +47,11 @@ def load_map_csv(map_csv_path):
             break
         if ',' in line:
             key, value = line.strip().split(',')
-            meta[key] = float(value)
+            # width, height는 정수, 나머지는 float
+            if key in ['width', 'height']:
+                meta[key] = int(float(value))
+            else:
+                meta[key] = float(value)
 
     grid_lines = lines[grid_start:]
     grid = np.array([[int(x) for x in line.strip().split(',')] for line in grid_lines], dtype=int)
@@ -60,22 +75,24 @@ def grid_to_display_classes(grid):
     return disp
 
 # ----------------------------
-# Map merging (unknown 대체 + max 규칙)
+# Map merging (origin_x, origin_y, width, height 고려, max 규칙)
 # ----------------------------
 def merge_maps(grid1, meta1, grid2, meta2):
     res1, res2 = meta1['resolution'], meta2['resolution']
-    assert abs(res1 - res2) < 1e-12, "두 지도 resolution이 달라 병합할 수 없습니다."
+    assert abs(res1 - res2) < 1e-12, "해상도가 다릅니다."
     res = res1
 
-    # 두 지도 범위
-    h1, w1 = grid1.shape
-    h2, w2 = grid2.shape
-    x1_min, x1_max = meta1['origin_x'], meta1['origin_x'] + w1 * res
-    y1_min, y1_max = meta1['origin_y'], meta1['origin_y'] + h1 * res
-    x2_min, x2_max = meta2['origin_x'], meta2['origin_x'] + w2 * res
-    y2_min, y2_max = meta2['origin_y'], meta2['origin_y'] + h2 * res
+    # 지도1 범위
+    h1, w1 = meta1['height'], meta1['width']
+    x1_min, y1_min = meta1['origin_x'], meta1['origin_y']
+    x1_max, y1_max = x1_min + w1 * res, y1_min + h1 * res
 
-    # 전체 범위
+    # 지도2 범위
+    h2, w2 = meta2['height'], meta2['width']
+    x2_min, y2_min = meta2['origin_x'], meta2['origin_y']
+    x2_max, y2_max = x2_min + w2 * res, y2_min + h2 * res
+
+    # 전체 바운딩 박스
     x_min, x_max = min(x1_min, x2_min), max(x1_max, x2_max)
     y_min, y_max = min(y1_min, y2_min), max(y1_max, y2_max)
     W = int(np.ceil((x_max - x_min) / res))
@@ -83,48 +100,41 @@ def merge_maps(grid1, meta1, grid2, meta2):
 
     merged = -1 * np.ones((H, W), dtype=int)
 
-    def place(src_grid, src_meta):
+    def paste(src_grid, src_meta):
+        h, w = src_meta['height'], src_meta['width']
         ox, oy = src_meta['origin_x'], src_meta['origin_y']
         x0 = int(np.floor((ox - x_min) / res))
         y0 = int(np.floor((oy - y_min) / res))
-        h, w = src_grid.shape
-        return (y0, y0+h, x0, x0+w), src_grid
+        return (x0, y0, w, h)
 
-    (y10,y1h,x10,x1w), g1 = place(grid1, meta1)
-    (y20,y2h,x20,x2w), g2 = place(grid2, meta2)
+    # 지도1 복사
+    x0, y0, w, h = paste(grid1, meta1)
+    merged[y0:y0+h, x0:x0+w] = grid1
 
-    # 지도1 먼저 복사
-    merged[y10:y1h, x10:x1w] = g1
+    # 지도2 병합
+    x1, y1, w2, h2 = paste(grid2, meta2)
+    sub = merged[y1:y1+h2, x1:x1+w2]
+    a = sub
+    b = grid2
 
-    # 교차 영역
-    dx0, dx1 = max(x10,x20), min(x1w,x2w)
-    dy0, dy1 = max(y10,y20), min(y1h,y2h)
-    if dx0 < dx1 and dy0 < dy1:
-        a = merged[dy0:dy1, dx0:dx1]
-        b = g2[(dy0-y20):(dy1-y20), (dx0-x20):(dx1-x20)]
-        out = a.copy()
+    both_known = (a != -1) & (b != -1)
+    only_a = (a != -1) & (b == -1)
+    only_b = (a == -1) & (b != -1)
 
-        both_known = (a != -1) & (b != -1)
-        only_a     = (a != -1) & (b == -1)
-        only_b     = (a == -1) & (b != -1)
+    out = a.copy()
+    out[only_a] = a[only_a]
+    out[only_b] = b[only_b]
+    out[both_known] = np.maximum(a[both_known], b[both_known])  # ✅ max 규칙
 
-        out[only_a] = a[only_a]
-        out[only_b] = b[only_b]
-        out[both_known] = np.maximum(a[both_known], b[both_known])  # ✅ max 값 사용
+    merged[y1:y1+h2, x1:x1+w2] = out
 
-        merged[dy0:dy1, dx0:dx1] = out
-
-    # 교차 외 영역: 지도2 값으로 채우기
-    yslice = slice(max(0,y20), min(H,y2h))
-    xslice = slice(max(0,x20), min(W,x2w))
-    sub = merged[yslice, xslice]
-    g2_crop = g2[(yslice.start-y20):(yslice.stop-y20),
-                 (xslice.start-x20):(xslice.stop-x20)]
-    mask = (sub == -1) & (g2_crop != -1)
-    sub[mask] = g2_crop[mask]
-    merged[yslice, xslice] = sub
-
-    merged_meta = {'resolution': res, 'origin_x': x_min, 'origin_y': y_min}
+    merged_meta = {
+        'resolution': res,
+        'origin_x': x_min,
+        'origin_y': y_min,
+        'width': W,
+        'height': H
+    }
     return merged, merged_meta
 
 # ----------------------------
@@ -144,7 +154,7 @@ def plot_robot_trajectories_with_map(folder_path,
     else:
         grid, meta = grid1, meta1
 
-    H, W = grid.shape
+    H, W = meta['height'], meta['width']
     res = meta['resolution']
     ox, oy = meta['origin_x'], meta['origin_y']
     extent = [ox, ox + W * res, oy, oy + H * res]
