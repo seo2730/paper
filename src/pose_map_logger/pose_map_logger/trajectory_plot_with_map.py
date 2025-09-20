@@ -39,39 +39,46 @@ def plot_robot_trajectories_with_map(folder_path, map_csv_path, save_filename='r
     # 지도 시각화
     grid, meta = load_map_csv(map_csv_path)
     map_img = np.where(grid == -1, 127, 255 - grid)  # unknown=127, occupied=0, free=255
-    plt.imshow(map_img, cmap='gray', origin='lower')
 
-    # --- [추가] 로봇 파일 목록 수집 & 정렬(안정적 색/범례 순서) ---
+    h, w = grid.shape
+    res = meta['resolution']
+    ox, oy = meta['origin_x'], meta['origin_y']
+
+    # 지도 extent를 실제 좌표계(m 단위)에 맞게 설정
+    extent = [ox, ox + w * res, oy, oy + h * res]
+    plt.imshow(map_img, cmap='gray', origin='lower', extent=extent)
+
+    # 로봇 파일 수집
     robot_files = sorted([
         fname for fname in os.listdir(folder_path)
         if fname.endswith('.csv') and 'posestamped' in fname
     ])
 
-    # --- [추가] 로봇 수만큼 분리된 색을 갖는 컬러맵 준비 ---
-    cmap = plt.get_cmap('tab20', max(len(robot_files), 1))  # len==0 방어
+    # 로봇 수만큼 고유 색상 지정
+    cmap = plt.get_cmap('tab20', max(len(robot_files), 1))
 
-    # 로봇 궤적
     for idx, fname in enumerate(robot_files):
         robot_name = fname.replace('.csv', '')
         data = load_pose_data(os.path.join(folder_path, fname))
 
-        # 월드 좌표 -> 맵 셀 좌표 변환
-        x_cells = data[:, 0] / meta['resolution'] - meta['origin_x'] / meta['resolution']
-        y_cells = data[:, 1] / meta['resolution'] - meta['origin_y'] / meta['resolution']
+        x_world = data[:, 0]
+        y_world = data[:, 1]
 
-        # --- [변경] 고유 색 사용 ---
         color = cmap(idx)
+        plt.plot(x_world, y_world, label=robot_name, color=color, linewidth=2, alpha=0.95)
 
-        plt.plot(
-            x_cells, y_cells,
-            label=robot_name,
-            color=color,
-            linewidth=2, alpha=0.95
+        # 시작 위치 원으로 강조
+        plt.scatter(
+            x_world[0], y_world[0],
+            s=80, c=[color], marker='o',
+            edgecolors='black', linewidths=1.2,
+            zorder=5, label=None
         )
 
+        # 마지막 위치에 총 이동거리 표시
         dist = compute_total_distance(data)
         plt.text(
-            x_cells[-1], y_cells[-1],
+            x_world[-1], y_world[-1],
             f'{dist:.2f}m', fontsize=9, color=color,
             ha='left', va='bottom'
         )
@@ -79,9 +86,8 @@ def plot_robot_trajectories_with_map(folder_path, map_csv_path, save_filename='r
         print(f'{robot_name} 총 이동 거리: {dist:.2f} m')
 
     plt.title('Robot Trajectories over Map')
-    plt.xlabel('Map X (cell)')
-    plt.ylabel('Map Y (cell)')
-    # 범례가 많아질 때도 보기 좋게
+    plt.xlabel('X (meters)')
+    plt.ylabel('Y (meters)')
     plt.legend(loc='upper right', fontsize=9, framealpha=0.9)
     plt.grid(True, alpha=0.2)
     plt.tight_layout()
