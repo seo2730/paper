@@ -40,17 +40,23 @@ def plot_robot_distance_boxplot(folder_path, save_filename='robot_distance_boxpl
     sorted_robot_names = sorted(robot_data.keys(), key=extract_robot_number)
     sorted_data = [robot_data[name] for name in sorted_robot_names]
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(10, 3))
     plt.boxplot(sorted_data, labels=sorted_robot_names, patch_artist=True,
+<<<<<<< HEAD
                 boxprops=dict(facecolor='blue'))
+=======
+                boxprops=dict(facecolor='lightgreen'), medianprops=dict(color='none'))
+>>>>>>> 0720f838ba354cef2ed5d95bcb16ed591843b1b2
 
     # for i, dists in enumerate(sorted_data):
     #     x = [i+1]*len(dists)
     #     plt.scatter(x, dists, color='red', zorder=3)
 
-    plt.title('Total Travel Distance per Robot (Boxplot)')
-    plt.ylabel('Travel Distance (m)')
-    plt.ylim(5, 65)  # Y축 고정 범위 설정
+    # plt.title('Total Travel Distance per Robot (Boxplot)')
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
+    plt.ylabel('Travel Distance(m)', fontsize=20)
+    plt.ylim(14,49)  # Y축 고정 범위 설정 19,62 9,26 14,49
     plt.grid(True)
     plt.tight_layout()
     plt.savefig(save_filename)
