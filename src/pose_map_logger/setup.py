@@ -22,7 +22,8 @@ setup(
         'console_scripts': [
             'pose_and_map_logger = pose_map_logger.pose_and_map_logger:main',
             'trajectory_plot_with_map = pose_map_logger.trajectory_plot_with_map:main',
-            'distance_boxplot = pose_map_logger.distance_boxplot:main'
+            'distance_boxplot = pose_map_logger.distance_boxplot:main',
+            'trajectory_plot_with_map2 = pose_map_logger.trajectory_plot_with_map2:main',
         ],
     },
 )
