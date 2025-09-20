@@ -70,7 +70,7 @@ def grid_to_display_classes(grid):
     return disp
 
 # ----------------------------
-# Map merging (덮어쓰기 X, 합집합 규칙)
+# Map merging (덮어쓰기 방지: 위치 클리핑 + 합집합 규칙)
 # ----------------------------
 def merge_maps(grid1, meta1, grid2, meta2):
     """
@@ -79,6 +79,7 @@ def merge_maps(grid1, meta1, grid2, meta2):
       - 하나라도 Occupied(>=50)이면 100
       - 그 외, 알려진 값이 하나라도 있으면 0(Free)
       - 둘 다 Unknown이면 -1
+    + 붙여넣기 위치를 반드시 캔버스 내부로 '클리핑'하여 음수 인덱싱 래핑 방지
     """
     res1, res2 = meta1['resolution'], meta2['resolution']
     assert abs(res1 - res2) < 1e-12, "두 지도 resolution이 달라 병합할 수 없습니다."
@@ -105,9 +106,28 @@ def merge_maps(grid1, meta1, grid2, meta2):
         y0 = int(np.floor((oy - y_min) / res))
         h, w = src_grid.shape
 
-        dst = merged[y0:y0+h, x0:x0+w]
+        # ---- 클리핑 (음수/범위초과 방지) ----
+        # 대상(캔버스) 좌표
+        dx0 = max(0, x0)
+        dy0 = max(0, y0)
+        dx1 = min(W, x0 + w)
+        dy1 = min(H, y0 + h)
+
+        # 아무 교집합이 없으면 skip
+        if dx0 >= dx1 or dy0 >= dy1:
+            return
+
+        # 소스(원본) 좌표
+        sx0 = dx0 - x0
+        sy0 = dy0 - y0
+        sx1 = sx0 + (dx1 - dx0)
+        sy1 = sy0 + (dy1 - dy0)
+
+        dst = merged[dy0:dy1, dx0:dx1]
+        src = src_grid[sy0:sy1, sx0:sx1]
+
         a = dst
-        b = src_grid
+        b = src
 
         a_unknown = (a == -1)
         b_unknown = (b == -1)
@@ -123,8 +143,9 @@ def merge_maps(grid1, meta1, grid2, meta2):
         out[occ] = 100   # occupied
         out[free] = 0    # free
 
-        dst[:, :] = out  # 규칙 결과만 쓰므로 '덮어쓰기' 문제 없음
+        dst[:, :] = out  # 규칙 결과만 기록 (덮어쓰기 아님)
 
+    # 순서는 중요하지 않지만 두 번 모두 '합집합 규칙' + '클리핑'으로 안전
     paste_union(grid1, meta1)
     paste_union(grid2, meta2)
 
@@ -207,7 +228,7 @@ def plot_robot_trajectories_with_map(folder_path,
 # Main
 # ----------------------------
 def main():
-    parser = argparse.ArgumentParser(description='궤적 + 맵 시각화 (단일/병합 지도)')
+    parser = argparse.ArgumentParser(description='궤적 + 맵 시각화 (단일/병합 지도, 안전 클리핑)')
     parser.add_argument('--folder', type=str, required=True, help='Pose CSV들이 있는 폴더 경로')
     parser.add_argument('--map', type=str, required=True, help='사용할 map CSV 파일 경로(필수)')
     parser.add_argument('--map2', type=str, default=None, help='병합할 두 번째 map CSV 파일 경로(선택)')
