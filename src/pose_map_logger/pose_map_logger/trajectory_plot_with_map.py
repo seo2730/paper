@@ -77,18 +77,22 @@ def plot_robot_trajectories_with_map(folder_path, map_csv_path, save_filename='r
 
         # 마지막 위치에 총 이동거리 표시
         dist = compute_total_distance(data)
-        plt.text(
-            x_world[-1], y_world[-1],
-            f'{dist:.2f}m', fontsize=9, color=color,
-            ha='left', va='bottom'
-        )
+        # plt.text(
+        #     x_world[-1], y_world[-1],
+        #     f'{dist:.2f}m', fontsize=9, color=color,
+        #     ha='left', va='bottom'
+        # )
 
         print(f'{robot_name} 총 이동 거리: {dist:.2f} m')
 
-    plt.title('Robot Trajectories over Map')
-    plt.xlabel('X (meters)')
-    plt.ylabel('Y (meters)')
-    plt.legend(loc='upper right', fontsize=9, framealpha=0.9)
+    # plt.title('Robot Trajectories over Map')
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
+    plt.xlim(-1.5, 26) # -1.5, 35 -1.5, 26
+    plt.ylim(7, 31.5) # -1.5, 35  7, 31.5
+    plt.xlabel('X (meters)', fontsize=20)
+    plt.ylabel('Y (meters)', fontsize=20)
+    plt.legend(loc='upper right', fontsize=15, framealpha=0.9)
     plt.grid(True, alpha=0.2)
     plt.tight_layout()
     plt.savefig(save_filename, dpi=200)
